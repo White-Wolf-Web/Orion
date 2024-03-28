@@ -8,8 +8,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-@Setter
-@Getter
+
 @Entity
 @Table(name = "USERS")
 @Data

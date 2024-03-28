@@ -14,14 +14,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
-
-;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -44,9 +42,21 @@ public class AuthController {
 
     // Login
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody UserLoginDTO loginDTO) {
-        return ResponseEntity.ok().body("Utilisateur connecté avec succès.");
+    @Operation(summary = "Log in a user and return a JWT token", responses = {@ApiResponse(responseCode = "200", description = "User logged in successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserLoginDTO.class), examples = {@ExampleObject(name = "SuccessResponse", value = "{\"token\": \"your_generated_token_here\"}")})), @ApiResponse(responseCode = "401", description = "Invalid credentials or login error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class), examples = {@ExampleObject(name = "ErrorResponse", value = "{\"error\": \"Invalid credentials.\"}")}))})
+    public ResponseEntity<?> loginUser(@Valid @RequestBody UserLoginDTO loginDTO, Errors errors) {
+        if (errors.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto("error"));
+        }
+        try {
+        UserDTO userDTO = authService.login(loginDTO);
+        return ResponseEntity.ok().body(userDTO);
+        } catch (
+                AuthenticationException e) {                                              // Gère les exceptions d'authentification.
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
+        }
     }
+
 
     // Mise à jour d'un utilisateur
     @PutMapping("/updateUser")

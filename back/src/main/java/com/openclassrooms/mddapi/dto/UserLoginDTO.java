@@ -2,11 +2,11 @@ package com.openclassrooms.mddapi.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserLoginDTO {
 
     @NotBlank(message = "L'email ne peut pas être vide")

@@ -6,7 +6,11 @@ import com.openclassrooms.mddapi.dto.UserRegisterDTO;
 import com.openclassrooms.mddapi.dto.UserUpdateDTO;
 import com.openclassrooms.mddapi.models.User;
 import com.openclassrooms.mddapi.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,20 +21,26 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+
+
+    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
-
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+
     }
+
+
+
 
     @Override
     public UserDTO register(UserRegisterDTO registerDTO) {
         User user = new User();
         user.setEmail(registerDTO.getEmail());
         user.setUsername(registerDTO.getUsername());
-        user.setPassword(passwordEncoder.encode(registerDTO.getPassword())); // Crypter le mot de passe
+        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
         user.setCreated_at(new Date());
         user.setUpdated_at(new Date());
         User savedUser = userRepository.save(user);
@@ -39,10 +49,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserDTO login(UserLoginDTO loginDTO) {
-        // La logique de connexion serait gérée ici, probablement en utilisant Spring Security pour authentifier l'utilisateur
-        // Cet exemple retourne un UserDTO simplifié pour l'illustration
-        return new UserDTO();
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword())
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Trouver l'utilisateur par email pour obtenir les autres informations
+        User user = userRepository.findByEmail(loginDTO.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé avec email : " + loginDTO.getEmail()));
+        return convertToDTO(user);
     }
+
+
 
     @Override
     public UserDTO updateUser(UserUpdateDTO updateDTO) {
