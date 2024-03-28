@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setEmail(registerDTO.getEmail());
         user.setUsername(registerDTO.getUsername());
-        //user.setPassword(passwordEncoder.encode(registerDTO.getPassword())); // Crypter le mot de passe
+        user.setPassword(passwordEncoder.encode(registerDTO.getPassword())); // Crypter le mot de passe
         user.setCreated_at(new Date());
         user.setUpdated_at(new Date());
         User savedUser = userRepository.save(user);
