@@ -1,7 +1,7 @@
 package com.openclassrooms.mddapi.service;
 
 import com.openclassrooms.mddapi.dto.UserDTO;
-import com.openclassrooms.mddapi.dto.UserLoginDTO;
+import com.openclassrooms.mddapi.dto.UserLoginRequestDTO;
 import com.openclassrooms.mddapi.dto.UserRegisterDTO;
 import com.openclassrooms.mddapi.dto.UserUpdateDTO;
 import com.openclassrooms.mddapi.models.User;
@@ -48,16 +48,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDTO login(UserLoginDTO loginDTO) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword())
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        // Trouver l'utilisateur par email pour obtenir les autres informations
+    public UserDTO login(UserLoginRequestDTO loginDTO) {
+
         User user = userRepository.findByEmail(loginDTO.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé avec email : " + loginDTO.getEmail()));
         return convertToDTO(user);
     }
+
 
 
 
